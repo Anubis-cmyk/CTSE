@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Animated } from 'react-native';
+import { StyleSheet, Text, View, TextInput,Image, TouchableOpacity, Keyboard, TouchableWithoutFeedback, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable'; 
 import { useNavigation } from '@react-navigation/native';
 import { auth } from '../../Connector/Firebase';
+import logo from '../../assets/logo.png';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -58,8 +59,7 @@ const LoginScreen = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <Animatable.View  animation="fadeInUpBig" style={styles.container}>
         <Animated.View style={[styles.logoContainer, logoAnimation.getLayout()]}>
-          <Ionicons name="md-planet" size={100} color="#FFF" />
-          <Text style={styles.logoText}>AQUAPEDIA</Text>
+        <Image source={logo} style={styles.logoImage} />
         </Animated.View>
         <Animatable.View animation="fadeInUpBig" style={styles.formWrap}>
             <Animatable.View animation={'slideInLeft'} style={styles.inputContainer}>

@@ -3,7 +3,7 @@ import { View, Text,Alert, StyleSheet, FlatList,Image, TouchableOpacity } from '
 import { Ionicons } from '@expo/vector-icons';
 import firebase from 'firebase/app';
 import { auth,database } from '../../Connector/Firebase';
-import {Animatable} from 'react-native-animatable';
+import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const ProfileScreen = ({ navigation }) => {
@@ -67,7 +67,7 @@ const ProfileScreen = ({ navigation }) => {
   };
 const renderItem = ({ item })  => (
    <TouchableOpacity style={styles.article} onPress={() => handleEditArticle(item)}>
-              <View style={styles.articleHeadder}>
+              <Animatable.View animation={'fadeInDown'} style={styles.articleHeadder}>
                 <Text style={styles.articleTitle}>{item.name}</Text>
                 <View style={styles.icons}>
                   <TouchableOpacity style={styles.optionIcons} onPress={() => handleDeleteArticle(item)}>
@@ -77,11 +77,11 @@ const renderItem = ({ item })  => (
                     <Ionicons name="md-pencil-sharp" size={30} color="#1c1c1c" />
                   </TouchableOpacity>
                 </View>
-              </View>
-              <View style={styles.articleImageContainer}>
+              </Animatable.View>
+              <Animatable.View  animation={'fadeIn'} style={styles.articleImageContainer}>
                 {item.imageUrl ?  <Image  source={{ uri: item.imageUrl }} style={styles.articleImageContainer} /> : <Ionicons name="image-outline" size={30} color="#fff" />}
 
-              </View>
+              </Animatable.View>
               <View style={styles.articleInfo}> 
                 <View style={styles.articleTags}>
                   {item.tags.map((tag) => (
@@ -97,7 +97,7 @@ const renderItem = ({ item })  => (
   return (
     <LinearGradient colors={[ '#072b42', '#005a79', '#008ea0', '#00c3af', '#27f8a6']} style={styles.container}>
       <View style={styles.container}>
-      <View style={styles.profileCard}>
+      <Animatable.View animation={'fadeInDown'} style={styles.profileCard}>
         <View style={styles.profileImageContainer}>
           <Ionicons name="arrow-back" size={40} color="#000" onPress={() => navigation.goBack()} />
           <Text style={styles.title}>My Profile</Text>
@@ -113,14 +113,16 @@ const renderItem = ({ item })  => (
               </TouchableOpacity> 
           </>
         )}
-      </View>
-      <View style={styles.articlesContainer}>
+      </Animatable.View>
+      <Animatable.View animation={'fadeInUp'} style={styles.articlesContainer}>
         <View style={styles.inputContainer}>
-          <Text style={styles.articlesTitle}>My Articles</Text>
-          <TouchableOpacity style={styles.addArticle} onPress={() => navigation.navigate('Add')}>
+          <Animatable.Text animation={'fadeInLeft'}  style={styles.articlesTitle}>My Articles</Animatable.Text>
+          <Animatable.View animation={'fadeInRight'} >
+            <TouchableOpacity style={styles.addArticle} onPress={() => navigation.navigate('Add')}>
             <Ionicons name="add-sharp" size={20} color="#fff" />
             <Text style={styles.addArticleText}>Add Article</Text>
           </TouchableOpacity>
+          </Animatable.View>
         </View>
         <FlatList
           data={articles}
@@ -128,7 +130,7 @@ const renderItem = ({ item })  => (
           renderItem={renderItem}
           ListEmptyComponent={() => <Text style={styles.noArticles}>No articles yet</Text>}
         />
-      </View>
+      </Animatable.View>
     </View>
     </LinearGradient>
   );

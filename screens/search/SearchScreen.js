@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Image } from 'react-native';
-import { fishData } from '../data/fishData';
-import * as Animatable from 'react-native-animatable';
-import { styles } from './styles';
+import { View, Text, TextInput, FlatList, TouchableOpacity, Image,StyleSheet } from 'react-native';
+import * as Animatable from 'react-native-animatable'; 
 
-const SearchScreen = () => {
+const SearchScreen = (fishData) => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const searchResultsRef = React.useRef();
@@ -163,4 +161,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+ 
  

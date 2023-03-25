@@ -6,7 +6,7 @@ import logo from '../../assets/logo.png';
 import { auth,database } from '../../Connector/Firebase'; 
 import { useNavigation } from '@react-navigation/native';
 import * as Animatable from 'react-native-animatable';
- 
+import {SearchScreen} from './../search/SearchScreen';
 export default function HomeScreen() {
  
   const [isSearch, setIsSearch] = useState(true); 
@@ -15,6 +15,8 @@ export default function HomeScreen() {
   const [fishData, setFishData] = useState([]); 
   const [votedBy, setVotedBy] = useState([]); 
   const [ipAddress, setIpAddress] = useState('');
+  const [tagsList, setTagsList] = useState([]);
+  const [searchText, setSearchText] = useState('');
 
   /**
    * Check if user is logged in
@@ -57,6 +59,20 @@ export default function HomeScreen() {
     });
     return unsubscribe;
 
+  }, []);
+
+
+  /**
+   * Get tags list
+   */
+  useEffect(() => {
+    fishData.map((fish) => {
+      fish.tags.map((tag) => {
+        if(!tagsList.includes(tag)){
+          setTagsList([...tagsList, tag]);
+        }
+      })
+    })
   }, [fishData]);
 
 
@@ -90,7 +106,50 @@ export default function HomeScreen() {
   };
 
    
+  /**
+   * Search articles
+   * @param {*} e 
+   */
+  const searchArticles = (e) => { 
+    const text = e.nativeEvent.text;
+    setSearchText(text);
+    if(text.length > 0){
+      const filteredArticles = fishData.filter((article) => {
+        return article.name.toLowerCase().includes(text.toLowerCase());
+      });
+      setFishData(filteredArticles);
+    }else{
+      database.collection('articles').onSnapshot((snapshot) => {
+        const articles = [];
+        snapshot.forEach((doc) => {
+          articles.push({ id: doc.id, ...doc.data() });
+        });
+        setFishData(articles);
+      });
+    }
 
+  };
+
+  const searchArticlesByTag = (tag) => {
+    const filteredArticles = fishData.filter((article) => {
+      return article.tags.includes(tag);
+    });
+    setFishData(filteredArticles);
+  };
+  
+
+  /**
+   * get fish data
+  */
+  const getFishData = () => {
+     database.collection('articles').onSnapshot((snapshot) => {
+        const articles = [];
+        snapshot.forEach((doc) => {
+          articles.push({ id: doc.id, ...doc.data() });
+        });
+        setFishData(articles);
+      });
+  };
   const renderItem = ({ item }) => (
     
     <TouchableOpacity
@@ -113,7 +172,7 @@ export default function HomeScreen() {
                   <Ionicons name="md-arrow-down-circle" size={24} color="#4CB8C4" />
                 </TouchableOpacity>
                 <Text style={styles.voteCount}>{item.voteCount}</Text>
-                <TouchableOpacity style={styles.voteButton} onPress={()=>{item.votedBy.includes(ipAddress)? alert('hi') :upVote(item.id,item.voteCount,item.votedBy) }}>
+                <TouchableOpacity style={styles.voteButton} onPress={()=>{item.votedBy.includes(ipAddress)? alert('You already voted to this post !') :upVote(item.id,item.voteCount,item.votedBy) }}>
                   <Ionicons name="md-arrow-up-circle" size={24} color="#4CB8C4" />
                 </TouchableOpacity> 
             </View>
@@ -126,13 +185,14 @@ export default function HomeScreen() {
   );
 
   return (
+    
     <View style={styles.container}>
       <LinearGradient colors={[ '#072b42', '#005a79', '#008ea0', '#00c3af', '#27f8a6']} style={styles.header}>
         {isSearch ? 
-        (<Image source={logo} style={styles.logoImage} />) : 
-        (<TextInput style={styles.searchInput} placeholder="Search"onChange={()=>searchItems} />)}
+        (<Animatable.Image animation={'zoomInLeft'} source={logo} style={styles.logoImage} />) : 
+        (<TextInput style={styles.searchInput} placeholder="Search" onChange={text =>searchArticles(text)} />)}
         <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.button} onPress={()=>setIsSearch(!isSearch)}>
+            <TouchableOpacity style={styles.button} onPress={()=>{setIsSearch(!isSearch);getFishData()}}>
                 <Ionicons name={isSearch?"md-search":'md-close'} size={24} color="#fff" />
             </TouchableOpacity>
             {user ? (
@@ -140,7 +200,7 @@ export default function HomeScreen() {
                 <Ionicons name="md-person" size={24} color="#fff" />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
+              <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login')}>
                 <Ionicons name="md-log-in" size={24} color="#e74c3c" />
               </TouchableOpacity>
             )}
@@ -148,13 +208,19 @@ export default function HomeScreen() {
       </LinearGradient>
       <Animatable.View style={styles.searchTagList} animation="fadeInRightBig">
             <ScrollView  horizontal={true} showsHorizontalScrollIndicator={false}>
-              <TouchableOpacity style={styles.tag} onPress={()=>navigation.navigate('Category',{category:'Fish'})}>
-                <Animatable.Text style={styles.tags} animation="fadeInRight">Fish</Animatable.Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.tag} onPress={()=>getFishData()}>
+                      <Animatable.Text style={styles.tags} animation="fadeInRight">All</Animatable.Text>
+                </TouchableOpacity>
+                {tagsList.map((tag) => (
+                    <TouchableOpacity style={styles.tag} onPress={()=>searchArticlesByTag(tag)}>
+                      <Animatable.Text style={styles.tags} animation="fadeInRight">{tag}</Animatable.Text>
+                    </TouchableOpacity>
+                ))}
              
             </ScrollView>
       </Animatable.View>  
       <View style={styles.content}>
+       
         <FlatList
           data={fishData}
           renderItem={renderItem}
@@ -192,6 +258,18 @@ searchInput:{
     height: 80,
 
 },
+loginButton:{
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(250,100,150,0.5)',
+    borderRadius: 3,
+    paddingLeft: 10,
+    paddingRight: 10,
+    fontSize: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+},
 searchTagList:{
     display: 'flex',
     flexDirection: 'row',
@@ -199,7 +277,7 @@ searchTagList:{
     justifyContent: 'space-between',
     width: '100%',
     height: 50,
-    backgroundColor: 'rbga(250,250,0,0.5)',
+    backgroundColor: 'rgba(250,250,250,0.5)',
     paddingLeft: 20,
     paddingRight: 20,
     fontSize: 16,
